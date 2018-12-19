@@ -17,6 +17,8 @@ from apis import Page, APIValueError, APIResourceNotFoundError
 from models import User, Comment, Blog, next_id
 from config import configs
 
+from asyncio.subprocess import create_subprocess_shell, PIPE
+
 COOKIE_NAME = 'awesession'
 _COOKIE_KEY = configs.session.secret
 
@@ -77,6 +79,9 @@ def cookie2user(cookie_str):
 
 @get('/')
 def index(*, page='1'):
+    global result
+    result = None
+
     page_index = get_page_index(page)
     num = yield from Blog.findNumber('count(id)')
     page = Page(num)
@@ -114,6 +119,34 @@ def signin():
     return {
         '__template__': 'signin.html'
     }
+
+global result
+result = None
+
+async def run_cmd(cmd):
+    out_list = []
+    p = await create_subprocess_shell(cmd, stdout=PIPE)
+    out = await p.stdout.read()
+    for v in str(out,'gbk').strip().split('\n'):
+        out_list.append(v)
+    return out_list
+
+@get('/web_ide')
+def web_ide():
+    return {
+        '__template__': 'web_ide.html',
+        'compiler':result
+    }
+
+@post('/api/web_ide')
+async def api_ide(*, code_text):
+    if not code_text or not code_text.strip():
+        raise APIValueError('code_text')
+    logging.info(code_text)
+    global result
+    result = code_text
+    await run_cmd('gcc')
+    return dict(compiler=code_text)
 
 @post('/api/authenticate')
 def authenticate(*, email, passwd):
