@@ -47,7 +47,9 @@ $(function () {
     <div class="uk-width-2-3">
         <h1>欢迎使用WEB_IDE！</h1>
         {% if compiler %}
-            {{ compiler }}
+            {% for str in compiler %}
+                <li>{{ str }}</li>
+            {% endfor %}
             <div id="vm" class="uk-width-1-1">
                 <a href="#0" v-on="click: back()"><i class="uk-icon-user"> 返回</i></a>
             </div>

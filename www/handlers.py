@@ -5,7 +5,7 @@ __author__ = 'Michael Liao'
 
 ' url handlers '
 
-import re, time, json, logging, hashlib, base64, asyncio
+import re, time, json, logging, hashlib, base64, asyncio,aiofiles
 
 import markdown2
 
@@ -131,6 +131,10 @@ async def run_cmd(cmd):
         out_list.append(v)
     return out_list
 
+async def w2f(path,content):
+    async with aiofiles.open(path, mode='w+') as f:
+        await f.write(content)
+
 @get('/web_ide')
 def web_ide():
     return {
@@ -142,11 +146,11 @@ def web_ide():
 async def api_ide(*, code_text):
     if not code_text or not code_text.strip():
         raise APIValueError('code_text')
-    logging.info(code_text)
+    await w2f('TAR.cpp',code_text)
+    cmd = 'make && ./TAR'
+    str_list = await run_cmd(cmd)
     global result
-    # await run_cmd('gcc')
-    await asyncio.sleep(10)
-    result = code_text
+    result = str_list
     return dict(compiler=code_text)
 
 @post('/api/authenticate')
