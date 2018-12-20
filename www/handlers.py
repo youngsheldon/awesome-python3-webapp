@@ -144,8 +144,9 @@ async def api_ide(*, code_text):
         raise APIValueError('code_text')
     logging.info(code_text)
     global result
+    # await run_cmd('gcc')
+    await asyncio.sleep(10)
     result = code_text
-    await run_cmd('gcc')
     return dict(compiler=code_text)
 
 @post('/api/authenticate')
