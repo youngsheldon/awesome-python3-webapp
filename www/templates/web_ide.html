@@ -3,36 +3,42 @@
 {% block title %}WEB_IED{% endblock %}
 
 {% block beforehead %}
+<style>.CodeMirror {border: 2px inset #dee;}</style>
 
 <script>
 
 $(function () {
     var vm = new Vue({
         el: '#vm',
-        data: {
-            code_text: ''
-        },
-        methods: {
-            submit: function (event) {
+
+        methods: 
+        {
+            submit: function (event) 
+            {
                 event.preventDefault();
                 var $form = $('#vm');
-                if (! this.code_text.trim()) {
+                var content = $form.find('textarea').val().trim();
+                
+                if (! content.trim()) 
+                {
                     return $form.showFormError('请输入代码');
                 }
-                
-                $form.postJSON('/api/web_ide', {
-                    code_text: this.code_text.trim()
-                }, function (err, r) {
-                    if (err) {
-                        return $form.showFormError(err);
-                    }
-                    refresh();
-                });
-            },
 
-            back: function () {
-                location.assign('/');
-            }
+                $form.postJSON(
+                    '/api/web_ide', 
+                    {
+                        code_text: content.trim()
+                    }, 
+                    function (err, r) 
+                    {
+                        if (err) 
+                        {
+                            return $form.showFormError(err);
+                        }
+                        refresh();
+                    }
+                );
+            },
         }
     });
     $('#vm').show();
@@ -46,26 +52,38 @@ $(function () {
 
     <div class="uk-width-2-3">
         <h1>欢迎使用WEB_IDE！</h1>
+        
+        <form id="vm" v-on="submit: submit" class="uk-form uk-form-stacked">
+            <div class="uk-alert uk-alert-danger uk-hidden"></div>
+            <div class="uk-form-row">
+                <div class="uk-form-controls">
+                    <textarea id="code" v-model="code_text" rows="16" name="code_text"  class="uk-width-1-1" style="resize:none;">{{raw_text}}</textarea>      
+                </div>
+            </div>
+            <div class="uk-form-row">
+                <button type="submit" class="uk-button uk-button-primary"><i class="uk-icon-comment"></i> 编译</button>
+            </div>
+        </form>
+
+        <script>
+            var editor = CodeMirror.fromTextArea(
+                document.getElementById("code"), 
+                {
+                  lineNumbers: true,
+                  matchBrackets: true,
+                  mode: "text/x-csrc"
+                }
+            );
+        </script>
+
         {% if compiler %}
+            <ul class="uk-list uk-list-striped">
             {% for str in compiler %}
                 <li>{{ str }}</li>
             {% endfor %}
-            <div id="vm" class="uk-width-1-1">
-                <a href="#0" v-on="click: back()"><i class="uk-icon-user"> 返回</i></a>
-            </div>
-        {% else %}
-            <form id="vm" v-on="submit: submit" class="uk-form uk-form-stacked">
-                <div class="uk-alert uk-alert-danger uk-hidden"></div>
-                <div class="uk-form-row">
-                    <div class="uk-form-controls">
-                        <textarea v-model="code_text" rows="16" name="code_text" placeholder="your code" class="uk-width-1-1" style="resize:none;"></textarea>
-                    </div>
-                </div>
-                <div class="uk-form-row">
-                    <button type="submit" class="uk-button uk-button-primary"><i class="uk-icon-user"></i> 编译</button>
-                </div>
-            </form>
+            </ul>
         {% endif %}
+
     </div>
 
 {% endblock %}

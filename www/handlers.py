@@ -79,8 +79,9 @@ def cookie2user(cookie_str):
 
 @get('/')
 def index(*, page='1'):
-    global result
+    global result,raw_text
     result = None
+    raw_text = None
 
     page_index = get_page_index(page)
     num = yield from Blog.findNumber('count(id)')
@@ -120,8 +121,9 @@ def signin():
         '__template__': 'signin.html'
     }
 
-global result
+global result,raw_text
 result = None
+raw_text = None
 
 async def run_cmd(cmd):
     out_list = []
@@ -139,7 +141,8 @@ async def w2f(path,content):
 def web_ide():
     return {
         '__template__': 'web_ide.html',
-        'compiler':result
+        'compiler':result,
+        'raw_text':raw_text
     }
 
 @post('/api/web_ide')
@@ -149,7 +152,8 @@ async def api_ide(*, code_text):
     await w2f('TAR.cpp',code_text)
     cmd = 'make && ./TAR'
     str_list = await run_cmd(cmd)
-    global result
+    global result,raw_text
+    raw_text = code_text
     result = str_list
     return dict(compiler=code_text)
 
