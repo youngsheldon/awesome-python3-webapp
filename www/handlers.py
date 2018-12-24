@@ -7,7 +7,7 @@ __author__ = 'Michael Liao'
 
 import re, time, json, logging, hashlib, base64, asyncio,aiofiles
 
-import markdown2
+import markdown2,os
 
 from aiohttp import web
 
@@ -156,6 +156,22 @@ async def api_ide(*, code_text):
     raw_text = code_text
     result = str_list
     return dict(compiler=code_text)
+
+@post('/api/upload')
+async def upload_file(request):
+    reader = await request.multipart()
+    file = await reader.next()
+    filename = os.path.join('static/uploads', file.filename)
+    size = 0
+    with open(filename, 'wb') as f:
+        while True:
+           chunk = await file.read_chunk()  # 默认是8192个字节。
+           if not chunk:
+               break
+           size += len(chunk)
+           f.write(chunk)
+
+    return dict(filename='/'+filename)
 
 @post('/api/authenticate')
 def authenticate(*, email, passwd):
