@@ -14,10 +14,11 @@ from aiohttp import web
 from coroweb import get, post
 from apis import Page, APIValueError, APIResourceNotFoundError
 
-from models import User, Comment, Blog, next_id
+from models import User, Comment, Blog, RoomWeather, next_id
 from config import configs
 
 from asyncio.subprocess import create_subprocess_shell, PIPE
+from datetime import datetime
 
 COOKIE_NAME = 'awesession'
 _COOKIE_KEY = configs.session.secret
@@ -172,6 +173,51 @@ async def upload_file(request):
            f.write(chunk)
 
     return dict(filename='/'+filename)
+
+@get('/iot')
+def iot():
+    x_list = []
+    y_t_list = []
+    y_h_list = []
+    room_weather = yield from RoomWeather.findAll(orderBy='created_at desc', limit=10)
+    for v in room_weather:
+        x = str(datetime.fromtimestamp(v['created_at']))[:-7]
+        y_t = v['temperature']
+        y_h = v['humidity']
+        x_list.append(x)
+        y_t_list.append(y_t)
+        y_h_list.append(y_h)
+
+    x_list.reverse()
+    y_t_list.reverse()
+    y_h_list.reverse()
+
+    from pyecharts import Line
+    line = Line("室内温度变化曲线图")
+    line.add(
+        "温度",
+        x_list,
+        y_t_list,
+        mark_point=["max", "min"],
+        mark_line=["average"],
+        # yaxis_formatter="°C",
+        is_smooth=True,
+    )
+
+    line.add(
+        "湿度",
+        x_list,
+        y_h_list,
+        mark_point=["max", "min"],
+        mark_line=["average"],
+        # yaxis_formatter="%RH",
+        is_smooth=True,
+    )
+
+    return {
+        '__template__': 'iot.html',
+        'myechart':line.render_embed()
+    }
 
 @post('/api/authenticate')
 def authenticate(*, email, passwd):

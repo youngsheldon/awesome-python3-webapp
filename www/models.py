@@ -47,3 +47,11 @@ class Comment(Model):
     user_image = StringField(ddl='varchar(500)')
     content = TextField()
     created_at = FloatField(default=time.time)
+
+class RoomWeather(Model):
+    __table__ = 'room_weather_data'
+
+    id = StringField(primary_key=True, default=next_id, ddl='varchar(50)')
+    temperature = FloatField(default=0)
+    humidity = FloatField(default=0)
+    created_at = FloatField(default=time.time)

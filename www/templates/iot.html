@@ -1,0 +1,11 @@
+{% extends '__base__.html' %}
+
+{% block title %}Proudly presented by ECharts{% endblock %}
+
+{% block beforehead %}
+	<script src="/static/js/echarts.min.js"></script>
+{% endblock %}
+
+{% block content %}
+	{{ myechart|safe }}
+{% endblock %}
