@@ -59,7 +59,7 @@ def build():
         cmd.extend(includes)
         local(' '.join(cmd))
 
-def deploy():
+def deploy_web():
     newdir = 'www-%s' % _now()
     run('rm -f %s' % _REMOTE_TMP_TAR)
     put('dist/%s' % _TAR_FILE, _REMOTE_TMP_TAR)
@@ -77,6 +77,19 @@ def deploy():
         sudo('supervisorctl stop awesome')
         sudo('supervisorctl start awesome')
         sudo('/etc/init.d/nginx reload')
+
+def deploy_mqtt():
+    _MQTT_REMOTE_PATH = '/srv/awesome/mqtt/mqtt_server.py'
+    _MQTT_LOCAL_PATH = 'mqtt/mqtt_server.py'
+    with settings(warn_only=True):
+        sudo('supervisorctl stop mqtt')
+    run('rm %s' % _MQTT_REMOTE_PATH)
+    put(_MQTT_LOCAL_PATH, _MQTT_REMOTE_PATH)
+    run('dos2unix %s' % _MQTT_REMOTE_PATH)
+    run('chmod 777 %s' % _MQTT_REMOTE_PATH)
+    with settings(warn_only=True):
+        sudo('supervisorctl start mqtt')
+        sudo('supervisorctl status')
 
 RE_FILES = re.compile('\r?\n')
 

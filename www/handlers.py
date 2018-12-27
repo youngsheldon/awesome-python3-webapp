@@ -179,11 +179,11 @@ def iot():
     x_list = []
     y_t_list = []
     y_h_list = []
-    room_weather = yield from RoomWeather.findAll(orderBy='created_at desc', limit=10)
+    room_weather = yield from RoomWeather.findAll(orderBy='created_at desc', limit=100)
     for v in room_weather:
         x = str(datetime.fromtimestamp(v['created_at']))[:-7]
-        y_t = v['temperature']
-        y_h = v['humidity']
+        y_t = str(v['temperature'])[:5]
+        y_h = str(v['humidity'])[:5]
         x_list.append(x)
         y_t_list.append(y_t)
         y_h_list.append(y_h)
