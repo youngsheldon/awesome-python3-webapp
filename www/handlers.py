@@ -202,6 +202,9 @@ def iot():
         mark_line=["average"],
         # yaxis_formatter="°C",
         is_smooth=True,
+        is_fill=True,
+        line_opacity=0.2,
+        area_opacity=0.4,
     )
 
     line.add(
@@ -212,6 +215,9 @@ def iot():
         mark_line=["average"],
         # yaxis_formatter="%RH",
         is_smooth=True,
+        is_fill=True,
+        area_color="#000",
+        area_opacity=0.3,
     )
 
     return {
