@@ -175,11 +175,11 @@ async def upload_file(request):
     return dict(filename='/'+filename)
 
 @get('/iot')
-def iot():
+def iot(led_state=3):
     x_list = []
     y_t_list = []
     y_h_list = []
-    room_weather = yield from RoomWeather.findAll(orderBy='created_at desc', limit=100)
+    room_weather = yield from RoomWeather.findAll(orderBy='created_at desc', limit=1000)
     for v in room_weather:
         x = str(datetime.fromtimestamp(v['created_at']))[:-7]
         y_t = str(v['temperature'])[:5]
@@ -222,8 +222,33 @@ def iot():
 
     return {
         '__template__': 'iot.html',
-        'myechart':line.render_embed()
+        'myechart':line.render_embed(),
+        'led_state':led_state
     }
+
+@get('/api/led_on')
+def api_len_on():
+    import paho.mqtt.client as mqtt
+    HOST_IP = '192.168.31.11' 
+    HOST_PORT = 1883
+    TOPIC_ID = 'led_toggle'
+    client = mqtt.Client()
+    client.connect(HOST_IP, HOST_PORT, 60)
+    client.publish(TOPIC_ID, 'on')
+    client.disconnect()
+    return iot(1)
+
+@get('/api/led_off')
+def api_len_off():
+    import paho.mqtt.client as mqtt
+    HOST_IP = '192.168.31.11' 
+    HOST_PORT = 1883
+    TOPIC_ID = 'led_toggle'
+    client = mqtt.Client()
+    client.connect(HOST_IP, HOST_PORT, 60)
+    client.publish(TOPIC_ID, 'off')
+    client.disconnect()
+    return iot(0)
 
 @post('/api/authenticate')
 def authenticate(*, email, passwd):

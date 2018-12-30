@@ -7,5 +7,25 @@
 {% endblock %}
 
 {% block content %}
-	{{ myechart|safe }}
+    <div class="uk-width-3-4">
+    	{{ myechart|safe }}
+    </div>
+    <div class="uk-width-1-4">
+    	<h3>LED开关控制</h3>
+    	<div data-uk-button-radio class="uk-button-group">
+		    <button class="uk-button uk-button-success"><a href="/api/led_on">ON</a></button>
+		    <button class="uk-button uk-button-danger"><a href="/api/led_off">OFF</a></button>
+	    </div>
+		{% if led_state == 1 %}
+			<div class="uk-alert" data-uk-alert>
+			    <a href="/api/led_on" class="uk-alert-close uk-close"></a>
+			    <p>LED打开成功！</p>
+			</div>
+		{% elif led_state == 0 %}
+			<div class="uk-alert" data-uk-alert>
+			    <a href="/api/led_on" class="uk-alert-close uk-close"></a>
+			    <p>LED关闭成功！</p>
+			</div>
+		{% endif %}
+	</div>
 {% endblock %}
