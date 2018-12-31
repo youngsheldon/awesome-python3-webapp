@@ -174,8 +174,12 @@ async def upload_file(request):
 
     return dict(filename='/'+filename)
 
+def date2int(v):
+    vs = v[:10].split('-')
+    return int(vs[0]+vs[1]+vs[2])
+
 @get('/iot')
-def iot(led_state=3):
+def iot(led_state=3, date_limit=[]):
     x_list = []
     y_t_list = []
     y_h_list = []
@@ -191,6 +195,31 @@ def iot(led_state=3):
     x_list.reverse()
     y_t_list.reverse()
     y_h_list.reverse()
+
+    y_l = list(set([x[:4] for x in x_list ]))
+    m_l = list(set([x[5:7] for x in x_list ]))
+    d_l = list(set([x[8:10] for x in x_list ]))
+
+    if len(date_limit) > 0:
+        logging.info(date_limit)
+        select_x_list = []
+        select_y_t_list = []
+        select_y_h_list = []
+        counter = 0
+        s_date,e_date= int(date_limit[0]),int(date_limit[1])
+        for v in x_list:
+            c_v = date2int(v)
+            if c_v >= s_date and c_v <= e_date:
+                select_x_list.append(v)
+                select_y_t_list.append(y_t_list[counter])
+                select_y_h_list.append(y_h_list[counter])
+            counter += 1
+        x_list = select_x_list
+        y_t_list = select_y_t_list
+        y_h_list = select_y_h_list
+        logging.info(len(x_list))
+        logging.info(len(y_t_list))
+        logging.info(len(y_h_list))
 
     from pyecharts import Line
     line = Line("室内温度变化曲线图")
@@ -223,8 +252,20 @@ def iot(led_state=3):
     return {
         '__template__': 'iot.html',
         'myechart':line.render_embed(),
-        'led_state':led_state
+        'led_state':led_state,
+        'y_l':y_l,
+        'm_l':m_l,
+        'd_l':d_l
     }
+
+@get('/iot/{sd}/{ed}')
+def iot_select2(*,sd,ed):
+    return iot(date_limit=[sd,ed])
+
+@post('/api/iot')
+def iot_select(*, s_y, s_m, s_d, e_y, e_m, e_d):
+    date_limit = [int(str(s_y)+str(s_m)+str(s_d)),int(str(e_y)+str(e_m)+str(e_d))]
+    return dict(sd=date_limit[0],ed=date_limit[1])
 
 @get('/api/led_on')
 def api_len_on():
@@ -236,7 +277,7 @@ def api_len_on():
     client.connect(HOST_IP, HOST_PORT, 60)
     client.publish(TOPIC_ID, 'on')
     client.disconnect()
-    return iot(1)
+    return iot(led_state=1)
 
 @get('/api/led_off')
 def api_len_off():
@@ -248,7 +289,7 @@ def api_len_off():
     client.connect(HOST_IP, HOST_PORT, 60)
     client.publish(TOPIC_ID, 'off')
     client.disconnect()
-    return iot(0)
+    return iot(led_state=0)
 
 @post('/api/authenticate')
 def authenticate(*, email, passwd):

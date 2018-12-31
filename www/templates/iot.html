@@ -4,6 +4,48 @@
 
 {% block beforehead %}
 	<script src="/static/js/echarts.min.js"></script>
+	<script>
+		$(function() {
+		    var vmAuth = new Vue({
+		        el: '#vm',
+		        data: {
+		            s_y: '2018',
+		            s_m: '12',
+		            s_d: '31',
+		            e_y: '2018',
+		            e_m: '12',
+		            e_d: '31'
+		        },
+		        methods: {
+		            submit: function(event) {
+		                event.preventDefault();
+
+		                var $form = $('#vm');
+		                if (!this.s_y.trim() || !this.s_m.trim() || !this.s_d.trim() || !this.e_y.trim() || !this.e_m.trim() || !this.e_d.trim()) 
+		                {
+                    		return $form.showFormError('请输入具体数字！');
+                		}
+
+	                    data = {
+	                        s_y:this.s_y.trim(),
+	                        s_m:this.s_m.trim(),
+	                        s_d:this.s_d.trim(),
+	                        e_y:this.e_y.trim(),
+	                        e_m:this.e_m.trim(),
+	                        e_d:this.e_d.trim()
+	                    };
+		                $form.postJSON('/api/iot', data, function(err, result) {
+		                    if (! err) {
+		                        location.assign('/iot/'+result.sd+'/'+result.ed);
+		                    }
+		                });
+		            }
+		        }
+		    });
+		    $('#vm').show();
+		});
+    </script>
+
 {% endblock %}
 
 {% block content %}
@@ -27,5 +69,60 @@
 			    <p>LED关闭成功！</p>
 			</div>
 		{% endif %}
+
+		<h3>	</h3>
+		
+		<form id="vm" v-on="submit: submit" class="uk-form uk-form-stacked uk-width-1-1"> 
+			<div class="uk-alert uk-alert-danger uk-hidden"></div>
+			<div class="uk-form-row">
+				<fieldset data-uk-margin>
+					<legend>开始日期</legend>
+					<div class="uk-form-controls">
+						<select v-model="s_y" name="s_y">
+						    {% for v in y_l %}
+				                <option>{{v}}</option>
+				            {% endfor %}
+						</select>
+						<select v-model="s_m" name="s_m">
+						    {% for v in m_l %}
+				                <option>{{v}}</option>
+				            {% endfor %}
+						</select>
+						<select v-model="s_d" name="s_d">
+							{% for v in d_l %}
+				                <option>{{v}}</option>
+				            {% endfor %}
+						</select>
+					</div>
+				</fieldset>
+			</div>
+
+			<div class="uk-form-row">
+				<fieldset data-uk-margin>
+					<legend>结束日期</legend>
+					<div class="uk-form-controls">
+						<select v-model="e_y" name="e_y">
+							{% for v in y_l %}
+				                <option>{{v}}</option>
+				            {% endfor %}
+						</select>
+						<select v-model="e_m" name="e_m">
+						    {% for v in m_l %}
+				                <option>{{v}}</option>
+				            {% endfor %}
+						</select>
+						<select v-model="e_d" name="e_d">
+						    {% for v in d_l %}
+				                <option>{{v}}</option>
+				            {% endfor %}
+						</select>
+					</div>
+				</fieldset>
+			</div>
+
+			<div class="uk-form-row">
+                <button type="submit" class="uk-button uk-button-primary"><i class="uk-icon-user"></i> 查询</button>
+            </div>
+		</form>
 	</div>
 {% endblock %}
